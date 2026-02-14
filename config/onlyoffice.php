@@ -2,7 +2,7 @@
 
 return [
     // OnlyOffice Document Server URL
-    'server_url' => env('ONLYOFFICE_SERVER', 'http://localhost:8888'),
+    'server_url' => env('ONLYOFFICE_SERVER', 'https://onlyoffice-server.husnifd.my.id'),
 
     // JWT Settings (untuk security)
     'jwt_secret' => env('ONLYOFFICE_JWT_SECRET', ''),
