@@ -6,7 +6,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Redirect root ke login
 Route::get('/', function () {
     return redirect('/login');
 });
@@ -21,14 +20,23 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// OnlyOffice routes (dengan auth middleware)
-Route::middleware(['auth'])->prefix('onlyoffice')->name('onlyoffice.')->group(function () {
-    Route::get('/', [OnlyOfficeController::class, 'index'])->name('index');
-    Route::post('/upload', [OnlyOfficeController::class, 'upload'])->name('upload');
-    Route::get('/{document}/editor', [OnlyOfficeController::class, 'editor'])->name('editor');
-    Route::get('/{document}/download', [OnlyOfficeController::class, 'download'])->name('download');
-    Route::post('/{document}/callback', [OnlyOfficeController::class, 'callback'])->name('callback');
-    Route::delete('/{document}', [OnlyOfficeController::class, 'destroy'])->name('destroy');
+// OnlyOffice routes
+Route::prefix('onlyoffice')->name('onlyoffice.')->group(function () {
+    // Routes dengan auth
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/', [OnlyOfficeController::class, 'index'])->name('index');
+        Route::post('/upload', [OnlyOfficeController::class, 'upload'])->name('upload');
+        Route::get('/{document}/editor', [OnlyOfficeController::class, 'editor'])->name('editor');
+        Route::delete('/{document}', [OnlyOfficeController::class, 'destroy'])->name('destroy');
+    });
+
+    // Routes tanpa auth & CSRF (untuk OnlyOffice callback)
+    Route::withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+        ->group(function () {
+            Route::get('/{document}/download', [OnlyOfficeController::class, 'download'])->name('download');
+            Route::post('/{document}/callback', [OnlyOfficeController::class, 'callback'])->name('callback');
+            Route::get('/{document}/callback', [OnlyOfficeController::class, 'callback'])->name('callback.get');
+        });
 });
 
 Route::get('clearcache', function () {
@@ -37,6 +45,7 @@ Route::get('clearcache', function () {
     Illuminate\Support\Facades\Artisan::call('view:clear');
     Illuminate\Support\Facades\Artisan::call('config:clear');
     Illuminate\Support\Facades\Artisan::call('config:cache');
+    return 'Cache cleared!';
 });
 
 require __DIR__ . '/auth.php';

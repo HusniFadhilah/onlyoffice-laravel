@@ -29,16 +29,17 @@ class OnlyOfficeService
     {
         $user = \App\Models\User::find($userId);
 
-        // Untuk Docker, gunakan host.docker.internal
-        $baseUrl = env('APP_ENV') === 'local'
-            ? 'http://host.docker.internal:8000'
-            : config('app.url');               // Production
+        // ✅ Untuk Docker, gunakan host.docker.internal
+        // OnlyOffice di Docker perlu akses Laravel di host Windows
+        // $baseUrl = 'http://localhost:8000';
+        $baseUrl = rtrim(config('onlyoffice.app_url'), '/');
+        // $baseUrl = 'http://host.docker.internal:8000';
 
         $config = [
             'documentType' => $this->getDocumentType($document->file_type),
             'document' => [
                 'title' => $document->title,
-                'url' => $baseUrl . '/onlyoffice/' . $document->id . '/download',
+                'url' => $baseUrl . '/api/onlyoffice/' . $document->id . '/download',
                 'fileType' => $document->file_type,
                 'key' => $document->key,
                 'permissions' => [
@@ -52,7 +53,7 @@ class OnlyOfficeService
             'editorConfig' => [
                 'mode' => 'edit',
                 'lang' => 'id',
-                'callbackUrl' => $baseUrl . '/onlyoffice/' . $document->id . '/callback',
+                'callbackUrl' => $baseUrl . '/api/onlyoffice/' . $document->id . '/callback',
                 'user' => [
                     'id' => (string) $userId,
                     'name' => $user->name ?? 'User ' . $userId
@@ -67,7 +68,8 @@ class OnlyOfficeService
                     'feedback' => true,
                     'help' => true,
                     'hideRightMenu' => false,
-                    'review' => true
+                    'review' => true,
+                    'spellcheck' => false
                 ]
             ]
         ];

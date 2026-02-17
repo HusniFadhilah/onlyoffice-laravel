@@ -60,19 +60,13 @@
 
     <div id="editor"></div>
     {{ $serverUrl }}
-    <script src="{{ $serverUrl }}/web-apps/apps/api/documents/api.js"></script>
+    <script src="{{ rtrim($serverUrl, '/') }}/web-apps/apps/api/documents/api.js"></script>
 
     <script>
-        // OnlyOffice config from Laravel
         const config = @json($config);
-
-        console.log('Initializing OnlyOffice with config:', config);
-
-        // Initialize editor
-        window.docEditor = new DocsAPI.DocEditor("editor", config);
-
-        // Event handlers
-        docEditor.events = {
+        console.log("ONLYOFFICE CONFIG:", config);
+        console.log(config.document.url, config.editorConfig.callbackUrl);
+        config.events = {
             onReady: function() {
                 console.log('OnlyOffice Editor Ready');
                 document.getElementById('loading').style.display = 'none';
@@ -80,16 +74,24 @@
 
             onError: function(event) {
                 console.error('OnlyOffice Error:', event);
+
+                var errorData = '';
+                if (event && event.data) {
+                    errorData = JSON.stringify(event.data);
+                } else {
+                    errorData = JSON.stringify(event);
+                }
+
                 document.getElementById('loading').innerHTML =
                     '<div style="color: #ef4444; padding: 20px;">' +
                     '<h3>❌ Error Loading Document</h3>' +
-                    '<p>Error: ' + JSON.stringify(event.data) + '</p>' +
+                    '<p>Error: ' + errorData + '</p>' +
                     '<p><a href="{{ route("onlyoffice.index") }}" style="color: #667eea;">← Back to Documents</a></p>' +
                     '</div>';
             },
 
             onDocumentStateChange: function(event) {
-                if (event.data) {
+                if (event && event.data) {
                     console.log('Document modified');
                 }
             },
@@ -99,12 +101,7 @@
             }
         };
 
-        // Prevent data loss warning
-        window.addEventListener('beforeunload', function(e) {
-            // OnlyOffice handles auto-save, but show warning anyway
-            e.preventDefault();
-            e.returnValue = '';
-        });
+        window.docEditor = new DocsAPI.DocEditor("editor", config);
 
     </script>
 </body>

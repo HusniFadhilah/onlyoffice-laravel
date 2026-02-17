@@ -53,7 +53,7 @@ class OnlyOfficeDocument extends Model
 
     public function getFullPathAttribute()
     {
-        return storage_path('app/' . $this->file_path);
+        return storage_path('app/public/' . $this->file_path);
     }
 
     public function getDownloadUrlAttribute()

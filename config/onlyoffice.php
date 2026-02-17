@@ -1,30 +1,19 @@
 <?php
 
 return [
-    // OnlyOffice Document Server URL
     'server_url' => env('ONLYOFFICE_SERVER', 'https://onlyoffice-server.husnifd.my.id'),
 
-    // JWT Settings (untuk security)
+    // ✅ URL Laravel yang bisa diakses oleh OnlyOffice Document Server
+    // beda dengan APP_URL kalau APP_URL masih localhost
+    'app_url' => env('ONLYOFFICE_APP_URL', env('APP_URL')),
+
     'jwt_secret' => env('ONLYOFFICE_JWT_SECRET', ''),
-    'jwt_enabled' => env('ONLYOFFICE_JWT_ENABLED', false),
+    'jwt_enabled' => filter_var(env('ONLYOFFICE_JWT_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
     'jwt_header' => env('ONLYOFFICE_JWT_HEADER', 'Authorization'),
 
-    // Callback settings
     'callback_timeout' => 30,
 
-    // Allowed file types
-    'allowed_extensions' => [
-        'docx',
-        'xlsx',
-        'pptx',
-        'doc',
-        'xls',
-        'ppt',
-        'pdf',
-        'txt',
-        'csv'
-    ],
+    'allowed_extensions' => ['docx', 'xlsx', 'pptx', 'doc', 'xls', 'ppt', 'pdf', 'txt', 'csv'],
 
-    // Storage path
     'storage_path' => storage_path('app/onlyoffice'),
 ];

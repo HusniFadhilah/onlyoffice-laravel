@@ -34,7 +34,7 @@ class OnlyOfficeController extends Controller
         }
 
         $filename = time() . '_' . $file->getClientOriginalName();
-        $path = $file->storeAs('onlyoffice/documents', $filename);
+        $path = $file->storeAs('onlyoffice/documents', $filename, 'public');
 
         $document = OnlyOfficeDocument::create([
             'user_id' => Auth::id(),
@@ -64,15 +64,34 @@ class OnlyOfficeController extends Controller
 
     public function download(OnlyOfficeDocument $document)
     {
-        if (!$this->canAccess($document, Auth::id())) {
-            abort(403);
-        }
+        Log::info('OO DOWNLOAD HIT', [
+            'ip' => request()->ip(),
+            'ua' => request()->userAgent(),
+            'method' => request()->method(),
+            'headers' => [
+                'range' => request()->header('Range'),
+                'auth' => request()->header('Authorization'),
+                'host' => request()->header('Host'),
+            ],
+        ]);
 
-        return response()->download($document->full_path, $document->filename);
+        return response()->file($document->full_path, [
+            'Content-Disposition' => 'inline; filename="' . $document->filename . '"',
+            'Cache-Control' => 'public',
+        ]);
     }
 
     public function callback(Request $request, $documentId)
     {
+        Log::info('OO CALLBACK HIT', [
+            'ip' => $request->ip(),
+            'ua' => $request->userAgent(),
+            'body' => $request->all(),
+            'headers' => [
+                'auth' => $request->header('Authorization'),
+                'host' => $request->header('Host'),
+            ],
+        ]);
         $data = $request->all();
 
         Log::info('OnlyOffice callback', $data);
